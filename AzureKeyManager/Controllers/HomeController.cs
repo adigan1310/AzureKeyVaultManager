@@ -83,6 +83,7 @@ namespace AzureKeyManager.Controllers
             {
                 datalist = JsonConvert.DeserializeObject<List<core.DataList>>(sr.ReadToEnd());
             }
+            datalist.Sort((x, y) => x.secretvalue.CompareTo(y.secretvalue));
             TempData["URi"] = azureNet.URi;
             return View(datalist);
         }
@@ -92,6 +93,7 @@ namespace AzureKeyManager.Controllers
         {
             ViewData["Error"] = TempData["PublishError"];
             List<core.DataList> datalist = JsonConvert.DeserializeObject<List<core.DataList>>(serializedModel);
+            datalist.Sort((x, y) => x.secretvalue.CompareTo(y.secretvalue));
             return View(datalist);
         }
 
@@ -100,18 +102,29 @@ namespace AzureKeyManager.Controllers
         {
             core.AzureKeyManager azureNet = new core.AzureKeyManager();
             var fileContents = System.IO.File.ReadAllLines(path);
-            if (fileContents != null)
+            bool result = false;
+            if(fileContents != null)
             {
                 azureNet.ClientID = fileContents[0];
                 azureNet.SecretKey = fileContents[1];
                 azureNet.TenantID = fileContents[2];
                 azureNet.URi = TempData["URi"].ToString();
             }
-            bool result = netManagerInterface.submitKey(azureNet,datalist);
+            var templist = datalist.Where(m => m.isChecked == true).ToList();
+            if (templist.Any())
+            {
+               result = netManagerInterface.submitKey(azureNet, templist);
+            }
+            else
+            {
+                result = netManagerInterface.submitKey(azureNet, datalist);
+            }                      
             if(result)
             {
-                TempData["Success"] = "Secrets loaded successfully...";
-                return RedirectToAction("Index");
+                TempData["PublishError"] = "Secrets stored successfully.";
+                datalist.Where(m => m.isChecked == true).ToList().ForEach(s => s.isChecked = false);
+                datalist.Where(m => m.secretvalue == null).ToList().ForEach(s => s.secretvalue = "");
+                return RedirectToAction("Importfile", new { serializedModel = JsonConvert.SerializeObject(datalist.ToList()) });
             }
             TempData["PublishError"] = "Issue in storing secrets.";
             return RedirectToAction("Importfile", new { serializedModel = JsonConvert.SerializeObject(datalist.ToList()) });

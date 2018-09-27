@@ -6,18 +6,50 @@
         alert('@ViewData["Error"]');
     </script>
 }
+    <div>
+        Export as JSON File:
+        <button id="save-dialog" class="btn">Export</button>
+        <script>
+    (function(){
+        const { ipcRenderer } = require('electron')
+        const fs = require('fs');
+        var model = '@Html.Raw(Json.Serialize(Model))';
 
+        document.getElementById("save-dialog")
+                .addEventListener("click", () => {
+            ipcRenderer.send("save-dialog");
+        });
+
+        ipcRenderer.on("save-dialog-reply", (sender, path) => {
+            if (!path) return;
+
+            fs.writeFile(path, model, function (err) {
+                console.log(err);
+                return;
+            });
+            alert("File Saved Successfully");
+        });
+                    }());
+
+        </script>
+    </div>
 @using (Html.BeginForm("Loadfile", "Home", FormMethod.Post))
 {
     <table class="table table-bordered table-hover" align="center">
         <thead class="thead-dark">
             <tr>
-                <th scope="col">Key Vault Name</th>
+                <td colspan="4" align="center">
+                    <input type="submit" value="Submit" />
+                </td>
+            </tr>
+            <tr>
+                <th scope="col">Secret Type</th>
                 <th scope="col">Secret Name</th>
                 <th scope="col">Secret Value</th>
+                <th scope="col">Selected Value</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody>            
             @for (var i = 0; i < Model.Count(); i++)
             {
                 <tr>
@@ -30,13 +62,12 @@
                     <td>
                         @Html.TextBoxFor(m => m[i].secretvalue)
                     </td>
+                    <td>
+                        @Html.CheckBoxFor(m => m[i].isChecked)
+                    </td>
                 </tr>
             }
-            <tr>
-                <td colspan="3" align="center">
-                    <input type="submit" value="Submit" />
-                </td>
-            </tr>
+
         </tbody>
     </table>
 }

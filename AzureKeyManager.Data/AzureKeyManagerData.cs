@@ -48,10 +48,12 @@ namespace AzureKeyManager.Data
             KeyVaultClient kv = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(GetToken));
             var list = new List<DataList>();
             var secret = kv.GetSecretsAsync(azureNet.URi);
-            foreach (SecretItem secrets in secret .Result)
+            foreach (SecretItem secrets in secret.Result)
             {
                 var name = secrets.Id.Substring(secrets.Id.LastIndexOf('/') + 1);
-                list.Add(new DataList() { secretname = name, secrettype = secrets.ContentType });
+                var secretval = kv.GetSecretAsync(azureNet.URi, name).GetAwaiter().GetResult();
+                var secretvalue = secretval.Value.ToString().Replace("\\","/");
+                list.Add(new DataList() { secretname = name, secrettype = secrets.ContentType, secretvalue = secretvalue });
             }
             return list;
         }
@@ -61,7 +63,7 @@ namespace AzureKeyManager.Data
             KeyVaultClient kv = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(GetToken));
             foreach (var item in dataList)
             {
-                var result = kv.SetSecretAsync(azureNet.URi, item.secretname, item.secretvalue);
+                var result = kv.SetSecretAsync(azureNet.URi, item.secretname, item.secretvalue,null,item.secrettype);
             }
             return true;
         }
