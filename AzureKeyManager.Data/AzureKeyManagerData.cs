@@ -53,6 +53,7 @@ namespace AzureKeyManager.Data
                 var name = secrets.Id.Substring(secrets.Id.LastIndexOf('/') + 1);
                 var secretval = kv.GetSecretAsync(azureNet.URi, name).GetAwaiter().GetResult();
                 var secretvalue = secretval.Value.ToString().Replace("\\","/");
+                secretvalue = secretvalue.Replace("\"", "");
                 list.Add(new DataList() { secretname = name, secrettype = secrets.ContentType, secretvalue = secretvalue });
             }
             return list;

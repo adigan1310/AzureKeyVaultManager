@@ -18,6 +18,7 @@ namespace AzureKeyManager.core
         public string secretname { get; set; }
         public string secrettype { get; set; }
         public string secretvalue { get; set; }
+        public bool isChecked { get; set; }
     }
 
     public class KeyList
