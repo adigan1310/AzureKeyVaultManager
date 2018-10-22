@@ -16,7 +16,8 @@ namespace AzureKeyManager.Controllers
         string path = System.IO.Directory.GetCurrentDirectory() + "\\config.txt";
         public static List<core.DataList> globlist = new List<core.DataList>();
         AzureKeyManager.core.AzureKeyManagerInterface netManagerInterface = new AzureKeyManager.Data.AzureKeyManagerData();
-        public IActionResult Index()
+       
+		public IActionResult Index()
         {
             ViewData["Success"] = TempData["Success"];
             return View();
